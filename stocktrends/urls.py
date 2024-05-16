@@ -24,9 +24,12 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', login_port, name="login"),
     path('', home, name="home"),
-    path('signup/', register, name="signup"),
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/login/', LoginView.as_view(), name='login'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/stock/create/', StockSymbolCreateView.as_view(), name='stock-create'),
+    path('api/stock/list/', StockSymbolListView.as_view(), name='stock-list'),
+    path('api/stock/<int:pk>/', StockSymbolDetailView.as_view(), name='stock-detail'),
 ]
