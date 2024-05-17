@@ -29,7 +29,6 @@ urlpatterns = [
     path('api/login/', LoginView.as_view(), name='login'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/stock/create/', StockSymbolCreateView.as_view(), name='stock-create'),
-    path('api/stock/list/', StockSymbolListView.as_view(), name='stock-list'),
-    path('api/stock/<int:pk>/', StockSymbolDetailView.as_view(), name='stock-detail'),
+    path('api/stock/', StockSymbolAPI.as_view(), name="stock_api"),
+    path('api/stock/create/', StockSymbolListCreateView.as_view(), name="stock_api")
 ]

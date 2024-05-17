@@ -9,7 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'password']
 
     def create(self, validated_data):
-        user = User.objects.create_user(username=validated_data['username'])
+        user = User.objects.create(username=validated_data['username'])
+        user.set_password(validated_data['password'])
         user.save()
 
         return user
@@ -19,3 +20,6 @@ class StockSymbolSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockSymbol
         fields = '__all__'
+        
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

@@ -12,28 +12,44 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import generics
 
 def home(request):
     return render(request, 'index.html')
 
-class StockSymbolCreateView(APIView):
-    def post(self, request):
-        serializer = StockSymbolSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class StockSymbolAPI(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-class StockSymbolListView(APIView):
-    def get(self, request):
-        symbols = StockSymbol.objects.filter(user=request.user)
-        serializer = StockSymbolSerializer(symbols, many=True)
-        return Response(serializer.data)
-    
-class StockSymbolDetailView(RetrieveUpdateDestroyAPIView):
+    def get(self,request):        
+        symbol_obj = StockSymbol.objects.filter(user=request.user)
+        serializer = StockSymbolSerializer(symbol_obj, many=True)
+        return Response({'status': 200, 'payload': serializer.data})
+
+    def post(self, request):
+        user = request.user
+        symbols = StockSymbol.objects.create(user=user, symbol=request.data['symbol'], description=request.data['description'], currency=request.data['currency'], type=request.data['type'])
+        serializer = StockSymbolSerializer(symbols)
+        return Response({'data': serializer.data})
+
+    def delete(self, request):
+        try:
+            id = request.data['id']
+            symbol_obj = StockSymbol.objects.get(id = id)
+            symbol_obj.delete()
+            return Response({'status': 200, 'message': 'deleted'})
+        except Exception as e:
+            return Response({'status': 403, 'message': 'invalid id'})
+        
+class StockSymbolListCreateView(generics.ListCreateAPIView):
     queryset = StockSymbol.objects.all()
     serializer_class = StockSymbolSerializer
-    lookup_field = 'pk'
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class RegisterView(APIView):
     def post(self, request):
