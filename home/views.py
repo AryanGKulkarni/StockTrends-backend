@@ -31,7 +31,7 @@ class StockSymbolAPI(APIView):
         user = request.user
         symbols = StockSymbol.objects.create(user=user, symbol=request.data['symbol'], description=request.data['description'], currency=request.data['currency'], type=request.data['type'])
         serializer = StockSymbolSerializer(symbols)
-        return Response({'data': serializer.data})
+        return Response({'status': 200, 'data': serializer.data})
 
     def delete(self, request):
         try:
@@ -62,8 +62,8 @@ class RegisterView(APIView):
 
         user = User.objects.get(username = serializer.data['username'])
         token_obj, _ = Token.objects.get_or_create(user=user)
-
-        return Response({'status': 200, 'payload': serializer.data, 'token': str(token_obj)})
+        refresh = RefreshToken.for_user(user)
+        return Response({'status': 200, 'payload': serializer.data, 'token': str(refresh.access_token)})
 
     
 class LoginView(APIView):
@@ -74,9 +74,6 @@ class LoginView(APIView):
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
+            return Response({'status': 200, 'token': str(refresh.access_token)})
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
